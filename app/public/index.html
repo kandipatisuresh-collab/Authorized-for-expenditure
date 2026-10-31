@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#17262d">
+    <title>AFE Builder</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="AFE Builder home">
+        <span class="brand-mark">AFE</span>
+        <span>AFE Builder</span>
+      </a>
+      <span class="local-badge"><span aria-hidden="true"></span> Local workspace</span>
+    </header>
+
+    <main class="layout">
+      <section class="intro">
+        <p class="eyebrow">AUTHORIZATION FOR EXPENDITURE</p>
+        <h1>Build a review-ready AFE.</h1>
+        <p>Enter project details and cost inputs. Calculations are performed by the local backend; missing or inconsistent values stay explicit.</p>
+      </section>
+
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+
+      <form id="afe-form">
+        <section class="panel">
+          <div class="section-heading">
+            <div><p class="eyebrow">01 / PROJECT</p><h2>Project &amp; well details</h2></div>
+            <span class="section-note">Use only confirmed or clearly estimated inputs</span>
+          </div>
+          <div class="field-grid">
+            <label>Project / well name<input name="projectName" autocomplete="off" placeholder="Not provided"></label>
+            <label>Operator<input name="operator" autocomplete="organization" placeholder="Not provided"></label>
+            <label>Area / asset group<input name="area" placeholder="e.g. Permian Basin, Texas"></label>
+            <label>Classification<select name="classification"><option value="">Not provided</option><option>Exploration</option><option>Development</option><option>Workover</option><option>Facility</option></select></label>
+            <label>Target formation<input name="target" placeholder="Not provided"></label>
+            <label>Spud date<input name="spudDate" type="date"></label>
+            <label>Estimated days to TD<input name="daysToTd" type="number" min="0" step="any" placeholder="Not provided"></label>
+            <label>Measured depth (feet)<input name="md" type="number" min="0" step="any" placeholder="Not provided"></label>
+            <label>True vertical depth (feet)<input name="tvd" type="number" min="0" step="any" placeholder="Not provided"></label>
+            <label>Currency<select name="currency"><option value="USD">USD — US Dollar</option><option value="CAD">CAD — Canadian Dollar</option><option value="EUR">EUR — Euro</option><option value="GBP">GBP — Pound Sterling</option></select></label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-heading">
+            <div><p class="eyebrow">02 / PARTICIPATION</p><h2>Working interests</h2></div>
+            <button type="button" class="button button-secondary" id="add-participant">+ Add participant</button>
+          </div>
+          <p class="helper">Exposures are calculated only when all participant interests are provided and total 100%.</p>
+          <div class="table-wrap">
+            <table class="input-table">
+              <thead><tr><th>Owner</th><th>Working interest (%)</th><th>Non-consent option</th><th></th></tr></thead>
+              <tbody id="participants"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-heading">
+            <div><p class="eyebrow">03 / ESTIMATE</p><h2>Cost breakdown</h2></div>
+            <label class="inline-field">IDC contingency (%)<input name="idcContingency" type="number" min="0" max="100" step="any" placeholder="Pending"></label>
+          </div>
+          <div class="table-wrap">
+            <table class="input-table cost-table">
+              <thead><tr><th>Code</th><th>Line item</th><th>Quantity / amount</th><th>Unit</th><th>Unit cost / lump sum</th></tr></thead>
+              <tbody id="costs-idc"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-heading">
+            <div><p class="eyebrow">04 / COMPLETION</p><h2>Tangible costs</h2></div>
+            <label class="inline-field">TDC contingency (%)<input name="tdcContingency" type="number" min="0" max="100" step="any" placeholder="Pending"></label>
+          </div>
+          <div class="table-wrap">
+            <table class="input-table cost-table">
+              <thead><tr><th>Code</th><th>Line item</th><th>Quantity / amount</th><th>Unit</th><th>Unit cost / lump sum</th></tr></thead>
+              <tbody id="costs-tdc"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-heading"><div><p class="eyebrow">05 / REVIEW CONTEXT</p><h2>Scope &amp; justification</h2></div></div>
+          <div class="field-grid">
+            <label class="span-2">Project objective<textarea name="objective" rows="2" placeholder="Not provided"></textarea></label>
+            <label class="span-2">Material risks<textarea name="risks" rows="2" placeholder="Not provided"></textarea></label>
+            <label class="span-2">Safeguards / mitigations<textarea name="safeguards" rows="2" placeholder="Not provided"></textarea></label>
+            <label class="span-2">Economic assumptions<textarea name="economics" rows="2" placeholder="Not provided"></textarea></label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-heading"><div><p class="eyebrow">06 / ROUTING</p><h2>Approval routing</h2></div></div>
+          <div id="approvals" class="field-grid"></div>
+          <p class="helper">Names and dates are not treated as approvals unless explicitly supplied.</p>
+        </section>
+
+        <div class="form-actions">
+          <p>Calculations and document generation run locally on this computer.</p>
+          <button type="submit" class="button button-primary" id="generate">Generate AFE <span aria-hidden="true">→</span></button>
+        </div>
+      </form>
+
+      <section id="result" class="panel result-panel" hidden>
+        <div class="section-heading">
+          <div><p class="eyebrow">GENERATED DOCUMENT</p><h2>AFE preview</h2></div>
+          <div class="result-actions">
+            <button type="button" class="button button-secondary" id="copy">Copy Markdown</button>
+            <button type="button" class="button button-primary" id="download">Download .md</button>
+          </div>
+        </div>
+        <div id="summary" class="summary"></div>
+        <pre id="preview" class="preview" tabindex="0"></pre>
+      </section>
+      <footer>AFE Builder · Runs locally · Verify all estimates and approvals before operational use.</footer>
+    </main>
+  </body>
+</html>
