@@ -65,13 +65,20 @@ test("calculates category contingencies, grand total, and partner exposures", ()
 
 test("keeps missing costs and contingencies pending without a numeric grand total", () => {
   const result = generateAfe({
-    project: {},
+    project: {
+      area: "Permian Basin, Texas",
+      target: "Bone Spring",
+      md: "10000",
+      tvd: "8000",
+    },
     costs: [],
     contingencies: {},
     participants: [{ owner: "Owner", interest: 100 }],
   });
   assert.equal(result.summary.grandTotalCents, null);
   assert.match(result.markdown, /Pending input — not fully reconciled/);
+  assert.match(result.markdown, /\| 102 \| Daywork Rig Rental \| Pending input \| Pending input \| Pending input \| Pending input; quantity and unit cost are required \|/);
+  assert.match(result.markdown, /\| 201 \| Surface Casing \| Pending input \| Pending input \| Pending input \| Pending input; quantity and unit cost are required \|/);
   assert.match(result.markdown, /Net Cost Exposure \(USD\)[\s\S]*?\| Owner \| 100% \| Pending input/);
   assert.equal(result.summary.isReconciled, false);
 });
@@ -79,7 +86,11 @@ test("keeps missing costs and contingencies pending without a numeric grand tota
 test("identifies negative costs and incomplete working interests", () => {
   const result = generateAfe({
     ...completeRequest,
-    costs: completeRequest.costs.map((line) => line.code === 102 ? { ...line, quantity: 1, unitCost: -50 } : line),
+    costs: completeRequest.costs.map((line) => {
+      if (line.code === 102) return { ...line, quantity: 1, unitCost: -50 };
+      if (line.code === 206) return { code: 206 };
+      return line;
+    }),
     participants: [
       { owner: "Partner A", interest: 60 },
       { owner: "Partner B", interest: 30 },
@@ -89,6 +100,93 @@ test("identifies negative costs and incomplete working interests", () => {
   assert.match(result.markdown, /quantity must be positive and unit cost non-negative/);
   assert.match(result.markdown, /total 90%, not 100%/);
   assert.match(result.markdown, /Net Cost Exposure \(USD\)[\s\S]*?\| Partner A \| 60% \| Pending input/);
+  assert.match(result.markdown, /\| 206 \| Surface Production Facilities & Storage Tanks \| Lump Sum \| - \| Pending input \| Pending input; no lump-sum amount supplied \|/);
+});
+
+test("keeps unsupported project and estimate details as explicit placeholders", () => {
+  const result = generateAfe({
+    project: {
+      area: "Permian Basin, Texas",
+      target: "Bone Spring",
+      md: "10000",
+      tvd: "8000",
+    },
+    costs: [],
+    contingencies: {},
+    participants: [],
+    approvals: {},
+  });
+
+  assert.match(result.markdown, /\*\*Project \/ Well Name:\*\* Not provided/);
+  assert.match(result.markdown, /\*\*Operator:\*\* Not provided/);
+  assert.match(result.markdown, /\*\*Estimated Spud Date:\*\* Not provided/);
+  assert.match(result.markdown, /\| 102 \| Daywork Rig Rental \| Pending input \| Pending input \| Pending input \| Pending input; quantity and unit cost are required \|/);
+  assert.match(result.markdown, /\| Not provided \| Not provided \| Pending input \| Not provided \|/);
+  assert.match(result.markdown, /\[Name, Title, Date — not provided\]/);
+  assert.equal(result.summary.grandTotalCents, null);
+});
+
+test("does not infer project facts or cost amounts from an underspecified request", () => {
+  const result = generateAfe({
+    project: {},
+    costs: [],
+    contingencies: {},
+    participants: [],
+    approvals: {},
+  });
+
+  assert.match(result.markdown, /\*\*Project \/ Well Name:\*\* Not provided/);
+  assert.match(result.markdown, /\*\*Area \/ Asset Group:\*\* Not provided/);
+  assert.match(result.markdown, /\*\*Target Formation \/ Objective:\*\* Not provided/);
+  assert.match(result.markdown, /\| 102 \| Daywork Rig Rental \| Pending input \| Pending input \| Pending input \| Pending input; quantity and unit cost are required \|/);
+  assert.match(result.markdown, /GRAND TOTAL ESTIMATED AFE COST:\*\* \*\*Pending input/);
+  assert.match(result.markdown, /\| Not provided \| Not provided \| Pending input \| Not provided \|/);
+  assert.equal(result.summary.grandTotalCents, null);
+});
+
+test("includes supplied justification and all approval roles without inventing signers", () => {
+  const result = generateAfe({
+    ...completeRequest,
+    approvals: {
+      preparedBy: { name: "Test Preparer", title: "Engineer", date: "2026-11-01" },
+    },
+  });
+  const narrative = result.markdown.split("## 4. JUSTIFICATION & OPERATIONAL SCOPE")[1]
+    .split("## 5. APPROVAL ROUTING & SIGN-OFF BLOCKS")[0];
+
+  assert.match(narrative, /Evaluate the Bone Spring development target/);
+  assert.match(narrative, /Lost circulation and uncertain formation pressure/);
+  assert.match(narrative, /Monitored mud program and contingency funds/);
+  assert.match(narrative, /No production-rate or ROI forecast supplied/);
+  assert.equal(narrative.trim().split(/\n\s*\n/).length, 2);
+  assert.match(result.markdown, /\*\*Prepared By:\*\* Test Preparer, Engineer, 2026-11-01/);
+  assert.match(result.markdown, /\*\*Reviewed By \(Operations\/Engineering\):\*\* \[Name, Title, Date — not provided\]/);
+  assert.match(result.markdown, /\*\*Reviewed By \(Finance\/Joint Interest Accounting\):\*\* \[Name, Title, Date — not provided\]/);
+  assert.match(result.markdown, /\*\*Approved By \(Executive Management\/CEO\):\*\* \[Name, Title, Date — not provided\]/);
+});
+
+test("keeps unavailable narrative facts and economic assumptions unresolved", () => {
+  const result = generateAfe({
+    project: {
+      objective: "Evaluate the supplied target.",
+      risks: "Potential lost circulation and uncertain formation pressure.",
+      safeguards: "Monitored mud program and contingency funds.",
+    },
+    costs: [],
+    contingencies: {},
+    participants: [],
+    approvals: {},
+  });
+  const narrative = result.markdown.split("## 4. JUSTIFICATION & OPERATIONAL SCOPE")[1]
+    .split("## 5. APPROVAL ROUTING & SIGN-OFF BLOCKS")[0];
+
+  assert.match(narrative, /Project objective: Evaluate the supplied target/);
+  assert.match(narrative, /Risks: Potential lost circulation and uncertain formation pressure/);
+  assert.match(narrative, /Safeguards: Monitored mud program and contingency funds/);
+  assert.match(narrative, /Economic assumptions: Not provided/);
+  assert.match(narrative, /Target: Not provided/);
+  assert.match(narrative, /project\/well name is Not provided/);
+  assert.doesNotMatch(narrative, /\b(?:production rate|ROI)\s*[:=]\s*\$?\d/i);
 });
 
 test("rejects malformed request objects and unsupported currencies", () => {
@@ -111,7 +209,9 @@ test("serves the frontend and generates an AFE through the HTTP API", async (t) 
 
   const pageResponse = await fetch(baseUrl);
   assert.equal(pageResponse.status, 200);
-  assert.match(await pageResponse.text(), /AFE Builder/);
+  const page = await pageResponse.text();
+  assert.match(page, /AFE Builder/);
+  assert.match(page, /Enter supplied values; missing cost inputs stay pending/);
 
   const configResponse = await fetch(`${baseUrl}/api/config`);
   assert.equal(configResponse.status, 200);

@@ -8,37 +8,36 @@
 
 ## Summary
 
-Deliver the AFE generator as a Copilot Chat workflow governed by the existing AFE
-requirements and project constitution. The repository currently contains prompt and
-Spec Kit documentation, not an executable application; therefore this plan defines the
-user-facing generation contract and validation scenarios without introducing an
-unspecified software stack or external data source. The generated document must keep
+Deliver a dependency-free local AFE web app alongside the Copilot generation
+instructions, governed by the existing AFE requirements and project constitution. The
+app calculates only from user-supplied values; omitted cost inputs remain pending
+because no approved pricing source is configured. The generated document must keep
 estimates and assumptions distinguishable from supplied facts and reconcile IDC, TDC,
 partner exposures, and the total.
 
 ## Technical Context
 
-**Language/Version**: N/A; no executable application language is established.
+**Language/Version**: JavaScript on Node.js 18 or newer; browser-native HTML, CSS, and
+JavaScript.
 
-**Primary Dependencies**: GitHub Copilot Chat; `.github/prd.md`;
-`.github/AFEinstructions.md`; `.specify/memory/constitution.md`.
+**Primary Dependencies**: Node.js built-in modules; no package dependencies.
 
-**Storage**: N/A; generation uses the current user request and does not persist AFE
-records.
+**Storage**: None; the local app does not persist AFE records.
 
-**Testing**: Documented acceptance scenarios and manual validation against the AFE
-generation contract; independently recalculate all displayed monetary totals.
+**Testing**: `node --test app/server.test.js` and
+`tests/validate_afe_output.ps1`; independently recalculate displayed monetary totals.
 
-**Target Platform**: GitHub Copilot Chat in VS Code.
+**Target Platform**: Local browser on Windows, macOS, or Linux; Copilot instructions are
+also maintained in `.github/`.
 
-**Project Type**: Prompt-driven document generation workflow.
+**Project Type**: Local web application and prompt-driven document-generation workflow.
 
 **Performance Goals**: Produce a complete AFE in one response for a sufficiently
 specified request; no latency target is established.
 
-**Constraints**: Output is Markdown; no external price, vendor, operating agreement, or
-economic data source is established; do not imply missing values are zero or invent
-confirmed project facts.
+**Constraints**: Output is Markdown; no approved price, vendor, operating agreement, or
+economic data source is established. Do not infer cost values from geography/depth,
+imply missing values are zero, or invent confirmed project facts.
 
 **Scale/Scope**: One AFE per request; no persistence, electronic routing, signature
 execution, or accounting integration in the initial scope.
@@ -50,8 +49,8 @@ execution, or accounting integration in the initial scope.
 | Principle | Gate | Status |
 |---|---|---|
 | I. Financial Accuracy and Classification | Define separate IDC/TDC treatment and explicit reconciliation checks for contingencies, totals, and partner exposures. | PASS |
-| II. Traceable Estimates and Assumptions | Distinguish user-supplied values, calculations, estimated defaults, and unresolved placeholders. | PASS |
-| III. Operational Credibility and Risk | Base operational estimates on supplied geography and depth; connect material risks to safeguards without guaranteeing economics. | PASS |
+| II. Traceable Estimates and Assumptions | Distinguish user-supplied values, calculations, and unresolved inputs; require user-supplied costs. | PASS |
+| III. Operational Credibility and Risk | Connect material risks to supplied safeguards without inventing costs or guaranteeing economics. | PASS |
 | IV. Complete, Consistent AFE Output | Preserve the required AFE headings, tables, narrative, sign-off roles, and no-preface format. | PASS |
 | V. Verified and Maintainable Behavior | Define repeatable acceptance scenarios and retain the existing PRD and app instructions as requirements. | PASS |
 
@@ -77,6 +76,18 @@ specs/001-afe-document-generation/
 ### Source Code (repository root)
 
 ```text
+.gitignore
+app/
+├── server.js
+├── server.test.js
+└── public/
+    ├── app.js
+    ├── index.html
+    └── styles.css
+tests/
+├── validate_afe_output.ps1
+└── fixtures/
+    └── afe-valid.md
 .github/
 ├── AFEinstructions.md
 ├── prd.md
@@ -89,12 +100,10 @@ specs/
 └── 001-afe-document-generation/
 ```
 
-**Structure Decision**: This repository has no application source tree, package manifest,
-or test runner. The feature is scoped as a Copilot Chat document-generation workflow, so
-the plan adds design and validation documents under the active feature directory and
-does not invent a `src/`, service, database, or deployment structure. Changes to the
-generator's operative prompt files remain an implementation-phase decision guided by
-these contracts.
+**Structure Decision**: Keep the existing dependency-free Node.js server and static
+frontend. Do not add a package manifest, database, external pricing service, or new
+deployment structure. Maintain the Copilot instruction and PRD files as the canonical
+generation requirements.
 
 ## Complexity Tracking
 

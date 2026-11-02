@@ -43,22 +43,22 @@ totals.
 
 ### User Story 2 - Complete Missing Operational Estimate Details (Priority: P2)
 
-As an AFE preparer, I want missing drilling and completion assumptions filled with
-credible defaults when the project's geography and target depth are known, so the estimate
-is useful without inventing confirmed facts.
+As an AFE preparer, I want missing drilling and completion cost inputs clearly marked
+pending unless I provide values or an approved benchmark, so the estimate does not present
+unsupported prices as credible defaults.
 
-**Why this priority**: Raw project requests may omit operational details, but those gaps
-must not prevent preparation of a reviewable estimate.
+**Why this priority**: Raw project requests may omit operational details, and unsupported
+cost assumptions could misstate the expenditure baseline.
 
-**Independent Test**: Omit rig rate, casing details, and vendor details from a request that
-includes geography and target depth; verify that the AFE supplies plausible estimated
-defaults and preserves the distinction between estimated values and supplied facts.
+**Independent Test**: Omit rig rates and casing quantities from a request that includes
+geography and target depth; verify that those values remain pending without a
+user-provided/approved benchmark and that project identities remain explicit placeholders.
 
 **Acceptance Scenarios**:
 
-1. **Given** geography and target depth but omitted operational parameters, **When** the
-   AFE is generated, **Then** reasonable industry-standard estimated values are included
-   for applicable line items.
+1. **Given** geography and target depth but omitted cost inputs and no approved benchmark,
+   **When** the AFE is generated, **Then** those cost values remain pending and are not
+   inferred from context alone.
 2. **Given** missing partner names, working interests, or approver identities, **When** the
    AFE is generated, **Then** those facts are left as explicit placeholders and are not
    invented.
@@ -68,9 +68,9 @@ defaults and preserves the distinction between estimated values and supplied fac
 4. **Given** cost inputs that cannot be used or working interests that do not total 100%,
    **When** the AFE is generated, **Then** the affected values are identified as
    inconsistent and are not silently changed or presented as reconciled.
-5. **Given** a cost amount that is missing and cannot be reasonably estimated, **When**
-   the AFE is generated, **Then** the amount is shown as an explicit placeholder rather
-   than as zero.
+5. **Given** a cost amount that is missing and no user-provided or approved benchmark is
+   available, **When** the AFE is generated, **Then** the amount is shown as an explicit
+   placeholder rather than as zero.
 
 ---
 
@@ -100,9 +100,8 @@ economic assumptions and that approval roles are present.
 
 - When costs are supplied without units or quantities, use lump-sum presentation where
   appropriate; do not imply an unsupported unit rate.
-- When a requested cost has no provided amount and a credible estimate cannot be derived
-  from the available context, use an explicit value placeholder instead of treating it as
-  zero.
+- When a requested cost has no provided amount, use an explicit pending-input placeholder
+  unless the user supplies a supported value; never treat it as zero.
 - When supplied working interests do not total 100%, do not silently normalize them;
   identify the inconsistency in the affected schedule.
 - When a cost or percentage is negative, malformed, or otherwise unusable, do not include
@@ -134,9 +133,10 @@ economic assumptions and that approval roles are present.
 - **FR-007**: When partner interests are provided and total 100%, the system MUST
   calculate each partner's net exposure from the gross AFE total and ensure the displayed
   exposures reconcile to the gross total.
-- **FR-008**: When geography and target depth provide sufficient context, the system MUST
-  fill omitted operational parameters with plausible industry-standard estimates
-  appropriate to that context.
+- **FR-008**: The system MUST use user-supplied cost inputs or an explicitly provided or
+  approved benchmark for numeric cost estimates. Geography and target depth alone MUST NOT
+  be used to infer missing prices or quantities; absent a supported basis, the affected
+  inputs MUST remain pending.
 - **FR-009**: The system MUST NOT invent partner interests, named vendors, approvers,
   dates, or other project-specific facts as though they were provided or confirmed.
 - **FR-010**: The AFE MUST include a 2–3 paragraph justification and operational scope
@@ -147,7 +147,7 @@ economic assumptions and that approval roles are present.
 - **FR-012**: The response MUST use professional Markdown headings, tables, and bullets;
   it MUST NOT include introductory filler or process commentary before the AFE title.
 - **FR-013**: The system MUST preserve the distinction between user-provided data,
-  calculated values, and estimated defaults, without presenting projected production or
+  calculated values, and unresolved inputs, without presenting projected production or
   return assumptions as guaranteed outcomes.
 - **FR-014**: The system MUST flag internally inconsistent cost inputs or participation
   percentages rather than silently correcting, normalizing, or concealing them.
@@ -178,9 +178,9 @@ economic assumptions and that approval roles are present.
 - **SC-003**: In every test case with valid partner interests summing to 100%, displayed
   partner exposures reconcile to the gross AFE total within the document's stated
   currency precision.
-- **SC-004**: In a review of 50 requests with omitted operational details and adequate
-  geography and depth context, at least 90% of estimated defaults are judged plausible
-  by a qualified oil and gas reviewer.
+- **SC-004**: In 100 requests with omitted numeric cost inputs and no approved benchmark,
+  100% of those inputs remain explicitly pending and are not represented as numeric
+  estimates.
 - **SC-005**: In 100 test cases with unknown partner or approval identities, no generated
   document presents an invented identity as a confirmed fact.
 
@@ -188,8 +188,9 @@ economic assumptions and that approval roles are present.
 
 - The primary users are project engineers, petroleum financial analysts, and stakeholders
   reviewing a proposed AFE.
-- The source of project facts is the user's request; no external price database, vendor
-  quote, or joint operating agreement is assumed.
+- The source of project facts and numeric costs is the user's request or a benchmark
+  explicitly provided/approved by the user; no external price database, vendor quote, or
+  joint operating agreement is assumed.
 - Costs are denominated in USD unless the user specifies another currency.
 - Contingencies are calculated against the applicable IDC or TDC pre-contingency subtotal.
 - When required project-specific information is unavailable, the document uses an

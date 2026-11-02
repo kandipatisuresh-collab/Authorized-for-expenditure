@@ -1,31 +1,30 @@
 # Research: AFE Document Generation
 
-## Decision: Treat the current feature as a Copilot Chat workflow
+## Decision: Keep the local AFE Builder and Copilot instructions aligned
 
-**Rationale**: The repository contains AFE prompt/instruction Markdown and the GitHub
-Copilot Spec Kit integration, but no application source, package manifest, deployment
-configuration, data store, or test runner. Copilot Chat is the evidenced user surface.
-The plan therefore specifies a document-generation workflow and does not assume a
-separate web application or programming language.
+**Rationale**: The repository contains a dependency-free local AFE web app, AFE
+prompt/instruction Markdown, and the GitHub Copilot Spec Kit integration. The app is the
+local user surface; the PRD and instruction file remain the canonical output contract.
 
 **Alternatives considered**:
 
-- Build a web application: no UI, framework, or deployment requirements are supplied.
-- Build a command-line utility: no command interface or local runtime requirements are
-  supplied.
+- Add a separate service or framework: no such dependencies are needed for the current
+  local workflow.
+- Treat the prompt instructions and app as separate products: this risks inconsistent
+  financial controls and missing-input behavior.
 
-## Decision: Treat the request as the source of project facts
+## Decision: Treat user-supplied values as the only cost basis
 
-**Rationale**: No vendor pricing, quote database, joint operating agreement, or economic
-data integration exists in the project. Estimates may use realistic defaults only when
-geography and target depth give adequate context; unknown identities and unsupported
-values remain placeholders.
+**Rationale**: No approved price book, vendor quote, joint operating agreement, or
+economic data integration exists in the project. Geography and target depth do not
+establish a monetary rate, so omitted cost values remain pending until supplied by the
+user.
 
 **Alternatives considered**:
 
-- Query external pricing or vendor sources: no source, authority, geography coverage, or
-  update policy is specified, so externally retrieved prices could not be represented as
-  audit-ready facts.
+- Add external pricing or vendor sources: no source, authority, geography coverage, or
+  update policy is specified, so retrieved prices could not be represented as audit-ready
+  facts.
 - Treat omitted cost amounts as zero: this would understate the expenditure and conceal
   missing information.
 
@@ -44,17 +43,17 @@ precision.
 ## Decision: Use a user-facing Markdown document contract
 
 **Rationale**: The PRD requires a Markdown AFE with a fixed heading and table structure.
-The contract describes observable chat input and output without imposing an API or
-implementation architecture that the repository does not have.
+The contract keeps the local app and Copilot instructions aligned on the same observable
+input and output without introducing an external service or data interface.
 
 **Alternatives considered**:
 
-- Define an HTTP or serialized-data API: there is no service or external machine
-  interface in scope.
+- Define an external API or serialized-data contract: there is no external integration
+  in scope.
 
 ## Unresolved implementation choices
 
-The precise application form and technology stack remain outside the approved
-prompt-driven scope. If the owner intends a standalone software product rather than a
-Copilot Chat workflow, scope and platform must be established before implementation.
-No remaining uncertainty prevents the document-generation contract or validation guide.
+No approved price book or vendor data source is configured; omitted numeric costs remain
+pending until supplied by the user. Copilot Chat prompt responses still require
+interactive validation in VS Code, while the local application and output contract have
+automated coverage.

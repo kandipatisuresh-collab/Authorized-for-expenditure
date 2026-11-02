@@ -42,7 +42,7 @@ Represents one coded drilling or completion estimate.
 | Unit cost | Cost per unit where applicable | Do not imply a unit price for a lump sum |
 | Gross cost | Extended estimate for the line | Quantity multiplied by unit cost, or supported lump sum |
 | Contingency | Category-specific percentage and amount | Apply once to the pre-contingency category subtotal |
-| Estimate basis | User supplied, calculated, or estimated default | Make the basis discernible and do not claim estimates are quotes |
+| Estimate basis | User supplied, calculated, or pending input | Do not infer missing cost rates or quantities from geography/depth |
 
 ## AFE Summary
 

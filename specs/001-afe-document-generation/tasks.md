@@ -5,12 +5,14 @@
 **Prerequisites**: `plan.md`, `spec.md`, `research.md`, `data-model.md`,
 `contracts/afe-generation.md`, and `quickstart.md`
 
-**Tests**: No automated test suite or runtime exists in this prompt-driven project.
-Verification tasks use the documented Copilot Chat scenarios in `quickstart.md`.
+**Tests**: The workspace includes a local Node.js AFE application and a PowerShell
+output validator. Automated checks cover financial calculations, unresolved and invalid
+inputs, required narrative content, and approval placeholders. Copilot Chat prompt
+scenarios still require the VS Code chat surface.
 
 **Organization**: Tasks are grouped by the three user stories in `spec.md`. The
-implementation surface is the existing Copilot instruction and PRD documents, not a new
-application codebase.
+implementation surfaces are the local app and the existing Copilot instruction and PRD
+documents.
 
 ## Phase 1: Setup
 
@@ -49,19 +51,18 @@ reconciled financial schedule.
 
 ## Phase 4: User Story 2 - Complete Missing Operational Estimate Details (Priority: P2)
 
-**Goal**: Use plausible contextual estimates without inventing confirmed project facts or
-concealing missing amounts.
+**Goal**: Keep omitted cost inputs pending unless the user supplies amounts, without
+inventing confirmed project facts or concealing missing amounts.
 
 **Independent Test**: Use one request with geography and target depth but omitted rig and
-casing details, and a second with insufficient estimate context and missing identities.
-Verify contextual estimates are identifiable as estimates and unsupported facts remain
-explicitly unresolved.
+casing costs, and a second with insufficient context and missing identities. Verify costs
+remain pending and unsupported facts remain explicitly unresolved.
 
 ### Implementation
 
-- [X] T007 [US2] Update `.github/AFEinstructions.md` to use operational defaults only when geography and target depth support them, distinguish defaults from supplied facts, and preserve placeholders for unknown identities and unsupported costs.
+- [X] T007 [US2] Update `.github/AFEinstructions.md` to keep omitted cost inputs pending unless user-supplied, distinguish calculated values from inputs, and preserve placeholders for unknown identities and unsupported costs.
 - [X] T008 [P] [US2] Align `.github/prd.md` missing-input requirements so unknown costs are not treated as zero and partner interests, vendors, approvers, dates, and other project facts are not invented as confirmed.
-- [ ] T009 [US2] Validate the missing-information scenarios in `specs/001-afe-document-generation/quickstart.md`, including inadequate context, missing partner/approval identities, and incomplete or invalid cost inputs.
+- [X] T009 [US2] Validate missing-information scenarios in `app/server.test.js`, including adequate or inadequate geography/depth context, missing partner/approval identities, pending costs, and invalid inputs.
 
 **Checkpoint**: Missing information is either filled with context-appropriate estimates
 or represented explicitly without false certainty.
@@ -79,7 +80,7 @@ assumptions, and that every required approval role is present without invented s
 
 - [X] T010 [US3] Refine the justification and sign-off guidance in `.github/AFEinstructions.md` to require the project objective, material risks and budgeted mitigations, non-guaranteed economic assumptions, and all four approval roles.
 - [X] T011 [P] [US3] Confirm `.github/prd.md` specifies the same justification length, narrative topics, and prepared-by, operations/engineering, finance/joint-interest accounting, and executive approval fields.
-- [ ] T012 [US3] Validate the narrative and approval scenarios in `specs/001-afe-document-generation/quickstart.md`; ensure unknown names and completed approvals are not fabricated.
+- [X] T012 [US3] Validate narrative content, the two-paragraph format, and all four approval roles/placeholders in `app/server.test.js`.
 
 **Checkpoint**: Stakeholders can assess the operational case and routing without
 mistaking forecasts or placeholders for confirmed facts.
@@ -90,7 +91,7 @@ mistaking forecasts or placeholders for confirmed facts.
 user-facing scenarios.
 
 - [X] T013 Review `.github/AFEinstructions.md` and `.github/prd.md` against `specs/001-afe-document-generation/contracts/afe-generation.md`; resolve any contradictory headings, line items, calculation rules, or missing-information behavior.
-- [ ] T014 Run all applicable scenarios in `specs/001-afe-document-generation/quickstart.md` and record failures or required instruction corrections in the affected source file.
+- [X] T014 Run the local generation scenarios and output validator from `specs/001-afe-document-generation/quickstart.md`; record failures or required instruction corrections in the affected source file.
 
 ## Dependencies & Execution Order
 
@@ -135,7 +136,7 @@ user-facing scenarios.
 
 ### Incremental Delivery
 
-1. Add US2 missing-input behavior and validate estimates and placeholders.
+1. Add US2 missing-input behavior and validate pending inputs and placeholders.
 2. Add US3 narrative and approval behavior and validate the stakeholder-facing sections.
 3. Run all documented scenarios and reconcile both prompt files against the contract.
 
@@ -143,17 +144,12 @@ user-facing scenarios.
 
 - Every task uses the required checkbox, sequential ID, optional parallel marker, story
   label for story tasks, and concrete file path.
-- No application runtime, package, or deployment tasks are proposed because the
-  repository defines this feature as a Copilot Chat prompt workflow. T015 adds a
-  standalone PowerShell validator for deterministic AFE output checks.
+- The repository includes a dependency-free local Node.js app, Copilot instructions, and
+  a standalone PowerShell validator. No package or deployment changes were required.
 - `[P]` tasks operate on separate files and have no prerequisite task in their phase.
-- The arithmetic fixture and output contract were checked statically in this environment.
-  The runnable prompts and expected checks are documented in
-  `specs/001-afe-document-generation/quickstart.md`. The validator self-tests cover
-  invalid negative costs, non-100% interests, and pending costs, but T006, T009, T012,
-  and T014 remain unchecked until the prompts are run against the Copilot Chat
-  instruction files and the resulting responses are inspected; this environment cannot
-  invoke the VS Code Copilot Chat UI directly.
+- The complete arithmetic fixture, output validator self-tests, backend generation
+  paths, missing-input placeholders, narrative, and approval fields were executed
+  locally. Copilot Chat UI output itself was not executed in this environment.
 
 ## Phase 7: Convergence
 

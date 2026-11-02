@@ -1,9 +1,7 @@
 <!--
 Sync Impact Report
-Version change: unratified scaffold → 1.0.0 (initial ratification)
-Modified principles: placeholder principles → I. Financial Accuracy and Classification;
-  II. Traceable Estimates and Assumptions; III. Operational Credibility and Risk;
-  IV. Complete, Consistent AFE Output; V. Verified and Maintainable Behavior
+Version change: 1.0.0 → 1.0.1
+Modified principles: II. Traceable Estimates and Assumptions; AFE Domain Constraints
 Added sections: AFE Domain Constraints; Quality and Delivery
 Removed sections: none
 Follow-up TODOs: none
@@ -22,10 +20,11 @@ percentage.
 
 ### II. Traceable Estimates and Assumptions
 Estimates MUST include meaningful units, quantities or durations, and unit costs wherever
-applicable. When the user omits operational details, the system MUST use credible defaults
-appropriate to the stated geography, target depth, and project scope. It MUST NOT present
-unknown vendor identities, partner interests, approvals, or economic outcomes as confirmed
-facts.
+applicable. Omitted numeric cost inputs MUST come from user-supplied values or an
+explicitly provided/approved benchmark; otherwise they MUST remain pending. Geography and
+target depth identify relevant inputs but do not establish prices. The system MUST NOT
+present unknown vendor identities, partner interests, approvals, or economic outcomes as
+confirmed facts.
 
 ### III. Operational Credibility and Risk
 AFE content MUST be consistent with the stated well objective, classification, target
@@ -55,8 +54,9 @@ not produce success-shaped results that conceal calculation errors or unsupporte
   precision for correct totals; displayed rounding MUST not create unreconciled summaries.
 - AFE identifiers MUST be unique tracking values, not represented as externally assigned
   identifiers unless the user supplies them.
-- Missing facts MUST be handled with realistic estimates or explicit placeholders according
-  to the output requirements; the system MUST NOT invent named people or executed approvals.
+- Missing facts MUST be handled with approved estimates or explicit placeholders according
+  to the output requirements; the system MUST NOT invent cost values, named people, or
+  executed approvals.
 
 ## Quality and Delivery
 
@@ -77,4 +77,4 @@ requirements, and PATCH for clarifications that do not change governance. Review
 check material changes for compliance with these principles and the referenced AFE
 requirements before approval.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-31 | **Last Amended**: 2026-10-31
+**Version**: 1.0.1 | **Ratified**: 2026-10-31 | **Last Amended**: 2026-11-01

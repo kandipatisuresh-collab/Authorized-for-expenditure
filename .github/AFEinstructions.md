@@ -9,24 +9,24 @@ structure. Keep this instruction file consistent with that PRD.
 
 - Return only the final AFE document. Start with `# AUTHORIZATION FOR EXPENDITURE (AFE)`
   and do not add introductory or process commentary.
-- Preserve the distinction between user-provided facts, calculated amounts, and estimated
-  defaults. Label estimated inputs as estimates; do not present assumed vendors, quotes,
-  dates, partner interests, approvals, or economic outcomes as confirmed facts.
+- Preserve the distinction between user-provided facts, calculated amounts, benchmark-
+  based estimates, and unresolved inputs. Identify the source of each benchmark-based
+  estimate; do not present assumed vendors, quotes, dates, partner interests, approvals,
+  or economic outcomes as confirmed facts.
 - Use `Not provided` for the project/well name unless the user supplies one. Do not
   create a descriptive name from the target, basin, objective, or test-fixture details.
   A generated AFE tracking reference is not a project or well name.
-- Use realistic operational defaults only when the supplied geography and target depth
-  support them. If context is inadequate, retain an explicit placeholder instead of
-  fabricating a value.
-- Do not treat unknown cost amounts as zero. For missing amounts that cannot be
-  responsibly estimated, use an explicit pending-input placeholder and do not claim the
+- Do not infer rig rates, casing quantities, or other numeric cost inputs from geography
+  and depth alone. Use amounts supplied by the user or an explicitly provided/approved
+  benchmark; otherwise retain an explicit pending-input placeholder and do not claim the
   AFE is fully reconciled.
 - Do not silently normalize invalid costs or working-interest percentages. Identify the
   affected inputs and state when totals or partner exposures cannot be reconciled.
 - Show USD unless the user supplies another currency. Use consistent currency precision
   and check the values as displayed.
 - Complete the Estimate Basis column for each cost line as user-provided, calculated,
-  estimated default, or pending input. For estimates, identify the assumptions used.
+  benchmark-based estimate, or pending input. For estimates, identify the source and
+  assumptions used.
 
 ## Financial Controls
 

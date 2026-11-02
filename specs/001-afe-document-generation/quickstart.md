@@ -87,11 +87,11 @@ TDC contingency **$125,000**, and total TDC **$1,375,000**. The grand total is
 ## Validate missing and inconsistent inputs
 
 1. Submit: `Prepare an AFE for a development well in the Permian Basin, Texas, targeting
-   the Bone Spring at 10,000 ft MD and 8,000 ft TVD. Estimate omitted rig-rate and casing
-   inputs only if these details provide a responsible basis; identify any defaults as
-   estimates with their assumptions. The project/well name is not provided. Do not
-   invent vendors or quotes.` Verify that any numeric defaults have a clear estimate
-   basis and are not represented as quotes, and that the name remains `Not provided`.
+   the Bone Spring at 10,000 ft MD and 8,000 ft TVD. Rig rates and casing cost inputs are
+   not provided. Do not infer prices or quantities from geography and depth. The
+   project/well name is not provided. Do not invent vendors or quotes.` Verify that
+   omitted cost inputs remain pending, totals remain unreconciled, and the name remains
+   `Not provided`.
 2. Submit: `Prepare an AFE for an exploration well. Operator, area, target, depths, date,
    costs, partner interests, partner names, and approvers are not provided.` Verify that
    these unknown values are not invented, missing costs are not zero, and the AFE does not
@@ -120,6 +120,20 @@ mandatory scenarios in [spec.md](./spec.md), and the project requirements. Any f
 in arithmetic, required sections, or unsupported-fact handling is a validation failure.
 
 ## Automated output validator
+
+Run the local application tests from the workspace root in PowerShell:
+
+```powershell
+node --test app\server.test.js
+```
+
+These tests verify complete financial reconciliation, unresolved and invalid inputs,
+placeholder handling for unknown facts, the justification narrative, and all four
+approval roles. The app deliberately leaves omitted cost inputs pending; it does not
+have an approved cost benchmark for generating contextual rig or casing estimates.
+The Copilot Chat prompts above still need to be run in VS Code to validate natural-
+language response formatting and missing-input handling against the instruction files;
+numeric cost defaults are not used.
 
 Run the validator self-tests from the workspace root in PowerShell:
 

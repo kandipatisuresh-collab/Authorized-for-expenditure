@@ -2,10 +2,10 @@
 
 ## Request
 
-The user provides raw oil and gas project details in Copilot Chat. Inputs may include
-project/well identity, operator, location, classification, target, schedule, depths,
-costs, cost units, contingencies, working-interest participants, objective, risks, and
-economic assumptions. Any of these may be omitted.
+The user provides raw oil and gas project details to the local app or Copilot Chat.
+Inputs may include project/well identity, operator, location, classification, target,
+schedule, depths, costs, cost units, contingencies, working-interest participants,
+objective, risks, and economic assumptions. Any of these may be omitted.
 
 ## Response
 
@@ -25,7 +25,7 @@ The response contains the following sections, in this order:
 
 The cost tables use the PRD's required line items and codes. The response includes units,
 quantities/durations, unit costs where meaningful, gross line costs, an estimate basis
-(user-provided, calculated, estimated default, or pending input) for each cost, and
+(user-provided, calculated, or pending input) for each cost, and
 category contingency percentages. It does not add introductory or process commentary
 before the AFE title.
 
@@ -47,11 +47,10 @@ before the AFE title.
 
 ## Missing information and estimates
 
-Use contextual operational defaults only when location/geography and target depth support
-a credible estimate. Distinguish such estimates from user-supplied facts. Do not invent
-partner interests, named vendors, people, dates, executed approvals, or unsupported
-economic results. Use explicit placeholders for unknown values that cannot reasonably be
-estimated; do not imply a missing cost is zero.
+Do not infer numeric cost inputs from geography or target depth. Use only amounts and
+rates supplied by the user; otherwise show explicit pending-input placeholders and do not
+imply a missing cost is zero. Do not invent partner interests, named vendors, people,
+dates, executed approvals, or unsupported economic results.
 
 ## Narrative and sign-off
 
