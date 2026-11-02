@@ -34,6 +34,20 @@ The launcher starts the local server, waits for its health check, and opens the 
 in the default browser. The app is available at `http://127.0.0.1:3000`. Press Ctrl+C in
 the launcher terminal to stop it. Set `PORT` to use another local port.
 
+## Deploy to Vercel
+
+The repository is configured for Vercel with static assets in `public/` and the Node.js
+API in `api/`.
+
+1. Sign in to [Vercel](https://vercel.com/) and choose **Add New → Project**.
+2. Import `kandipatisuresh-collab/Authorized-for-expenditure` from GitHub.
+3. Keep the repository root as the project root and use the default Node.js settings;
+   no build command or environment variables are required.
+4. Choose **Deploy**. Vercel will provide the live URL and redeploy on future pushes to
+   `main`.
+
+The AFE is calculated per request and is not persisted.
+
 ## Use
 
 1. Enter project and well information.

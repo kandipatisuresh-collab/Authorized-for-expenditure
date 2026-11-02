@@ -1,6 +1,6 @@
 const assert = require("node:assert/strict");
 const test = require("node:test");
-const { COSTS, createServer, generateAfe } = require("./server");
+const { COSTS, createServer, generateAfe, handleRequest } = require("./server");
 
 const completeRequest = {
   project: {
@@ -226,4 +226,29 @@ test("serves the frontend and generates an AFE through the HTTP API", async (t) 
   const generated = await generationResponse.json();
   assert.equal(generated.summary.grandTotalCents, 284240000);
   assert.match(generated.markdown, /GRAND TOTAL ESTIMATED AFE COST.*\$2,842,400\.00/);
+});
+
+test("accepts platform-parsed request bodies for serverless deployments", async () => {
+  const response = {
+    statusCode: null,
+    headers: null,
+    body: "",
+    writeHead(statusCode, headers) {
+      this.statusCode = statusCode;
+      this.headers = headers;
+    },
+    end(body = "") {
+      this.body = body;
+    },
+  };
+
+  await handleRequest({
+    method: "POST",
+    url: "/api/generate",
+    headers: { host: "localhost" },
+    body: completeRequest,
+  }, response);
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(JSON.parse(response.body).summary.grandTotalCents, 284240000);
 });

@@ -4,7 +4,7 @@ const path = require("node:path");
 const { randomBytes } = require("node:crypto");
 
 const ROOT = __dirname;
-const PUBLIC_DIR = path.join(ROOT, "public");
+const PUBLIC_DIR = path.join(ROOT, "..", "public");
 const MAX_BODY_BYTES = 1024 * 1024;
 const PORT = Number.parseInt(process.env.PORT || "3000", 10);
 const HOST = process.env.HOST || "127.0.0.1";
@@ -356,6 +356,24 @@ function sendJson(response, status, value) {
 }
 
 function readJson(request) {
+  if (request.body !== undefined) {
+    try {
+      const body = request.body;
+      if (typeof body === "string" || Buffer.isBuffer(body)) {
+        const text = body.toString("utf8");
+        if (Buffer.byteLength(text) > MAX_BODY_BYTES) {
+          throw Object.assign(new Error("Request body exceeds 1 MiB."), { statusCode: 413 });
+        }
+        return Promise.resolve(JSON.parse(text));
+      }
+      return Promise.resolve(body);
+    } catch (error) {
+      return Promise.reject(error.statusCode
+        ? error
+        : Object.assign(new Error("Request body must contain valid JSON."), { statusCode: 400 }));
+    }
+  }
+
   return new Promise((resolve, reject) => {
     let body = "";
     let bodyBytes = 0;
@@ -421,40 +439,42 @@ function serveStatic(request, response, pathname) {
   });
 }
 
+async function handleRequest(request, response) {
+  const url = new URL(request.url, `http://${request.headers.host || "localhost"}`);
+  if (url.pathname === "/api/health" && request.method === "GET") {
+    sendJson(response, 200, { status: "ok" });
+    return;
+  }
+  if (url.pathname === "/api/config" && request.method === "GET") {
+    sendJson(response, 200, {
+      costs: COSTS.map(({ code, category, description, kind, unit }) => ({ code, category, description, kind, unit })),
+      approvalRoles: APPROVALS.map(([key, label]) => ({ key, label })),
+    });
+    return;
+  }
+  if (url.pathname === "/api/generate" && request.method === "POST") {
+    try {
+      const input = await readJson(request);
+      sendJson(response, 200, generateAfe(input));
+    } catch (error) {
+      sendJson(response, error.statusCode || 400, { error: error.message || "Unable to generate AFE." });
+    }
+    return;
+  }
+  if (url.pathname.startsWith("/api/")) {
+    sendJson(response, 404, { error: "API endpoint not found." });
+    return;
+  }
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    response.writeHead(405, { Allow: "GET, HEAD" });
+    response.end("Method not allowed");
+    return;
+  }
+  serveStatic(request, response, url.pathname);
+}
+
 function createServer() {
-  return http.createServer(async (request, response) => {
-    const url = new URL(request.url, `http://${request.headers.host || "localhost"}`);
-    if (url.pathname === "/api/health" && request.method === "GET") {
-      sendJson(response, 200, { status: "ok" });
-      return;
-    }
-    if (url.pathname === "/api/config" && request.method === "GET") {
-      sendJson(response, 200, {
-        costs: COSTS.map(({ code, category, description, kind, unit }) => ({ code, category, description, kind, unit })),
-        approvalRoles: APPROVALS.map(([key, label]) => ({ key, label })),
-      });
-      return;
-    }
-    if (url.pathname === "/api/generate" && request.method === "POST") {
-      try {
-        const input = await readJson(request);
-        sendJson(response, 200, generateAfe(input));
-      } catch (error) {
-        sendJson(response, error.statusCode || 400, { error: error.message || "Unable to generate AFE." });
-      }
-      return;
-    }
-    if (url.pathname.startsWith("/api/")) {
-      sendJson(response, 404, { error: "API endpoint not found." });
-      return;
-    }
-    if (request.method !== "GET" && request.method !== "HEAD") {
-      response.writeHead(405, { Allow: "GET, HEAD" });
-      response.end("Method not allowed");
-      return;
-    }
-    serveStatic(request, response, url.pathname);
-  });
+  return http.createServer(handleRequest);
 }
 
 if (require.main === module) {
@@ -469,4 +489,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { COSTS, createServer, generateAfe };
+module.exports = { COSTS, createServer, generateAfe, handleRequest };
