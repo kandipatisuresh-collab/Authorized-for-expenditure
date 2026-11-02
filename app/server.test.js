@@ -212,6 +212,8 @@ test("serves the frontend and generates an AFE through the HTTP API", async (t) 
   const page = await pageResponse.text();
   assert.match(page, /AFE Builder/);
   assert.match(page, /Enter supplied values; missing cost inputs stay pending/);
+  assert.match(page, /Calculations are performed by the app server/);
+  assert.doesNotMatch(page, /run locally on this computer/i);
 
   const configResponse = await fetch(`${baseUrl}/api/config`);
   assert.equal(configResponse.status, 200);
