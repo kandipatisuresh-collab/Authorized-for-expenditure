@@ -166,6 +166,7 @@ function evaluateParticipants(participants, grandTotalCents) {
   const complete = provided.every((row) => row.owner && row.interest !== null && !row.issue);
   const totalInterest = complete ? provided.reduce((sum, row) => sum + row.interest, 0) : null;
   const validTotal = totalInterest !== null && Math.abs(totalInterest - 100) < 0.000001;
+  const invalidRows = provided.filter((row) => row.issue);
   const canCalculate = complete && validTotal && grandTotalCents !== null;
   if (canCalculate) {
     const largest = provided.reduce((best, row) => row.interest > best.interest ? row : best, provided[0]);
@@ -177,10 +178,17 @@ function evaluateParticipants(participants, grandTotalCents) {
     largest.exposureCents += grandTotalCents - allocated;
   }
   let note = null;
-  if (!complete) note = "Participant names and working interests must both be provided before exposures can be calculated.";
+  if (invalidRows.length) {
+    note = `${invalidRows.map((row) => row.owner || "Participant").join(", ")}: invalid working interest; expected 0–100%.`;
+  } else if (!complete) note = "Participant names and working interests must both be provided before exposures can be calculated.";
   else if (!validTotal) note = `Provided working interests total ${formatNumber(totalInterest)}%, not 100%; partner exposures cannot be reconciled.`;
   else if (grandTotalCents === null) note = "Working interests total 100%, but net exposures remain pending until the gross AFE is fully reconciled.";
-  return { rows: provided, note };
+  return {
+    rows: provided,
+    note,
+    hasProvidedParticipants: provided.length > 0,
+    needsInput: provided.length > 0 && (!complete || !validTotal),
+  };
 }
 
 function renderCostRow(line, currency) {
@@ -257,6 +265,39 @@ function generateAfe(data) {
     if (row.issue) errors.push(`${row.owner || "Participant"}: ${row.issue}.`);
   }
   if (participants.note && participants.note.includes("not 100%")) errors.push(participants.note);
+
+  const pendingInputs = lineItems
+    .filter((line) => line.cents === null)
+    .map((line) => ({
+      category: line.category,
+      label: `${line.code} — ${line.description}`,
+      message: line.issue,
+      inputNames: line.kind === "lump"
+        ? [`cost-${line.code}-lumpSum`]
+        : [`cost-${line.code}-quantity`, `cost-${line.code}-unitCost`],
+    }));
+  for (const evaluated of [idc, tdc]) {
+    if (evaluated.percentage === null ||
+        !Number.isFinite(evaluated.percentage) ||
+        evaluated.percentage < 0 ||
+        evaluated.percentage > 100 ||
+        (evaluated.baseCents !== null && evaluated.totalCents === null)) {
+      pendingInputs.push({
+        category: evaluated.category,
+        label: `${evaluated.category} contingency`,
+        message: evaluated.issue || "Contingency is unresolved",
+        inputNames: [`${evaluated.category.toLowerCase()}Contingency`],
+      });
+    }
+  }
+  if (participants.needsInput) {
+    pendingInputs.push({
+      category: "Participation",
+      label: "Working interests",
+      message: participants.note,
+      inputNames: ["participant-owner", "participant-interest"],
+    });
+  }
 
   const date = fieldValue(project, "spudDate");
   const dateDisplay = date === "Not provided" ? date : `${date} (user-provided)`;
@@ -339,7 +380,11 @@ function generateAfe(data) {
       idcCents: idc.totalCents,
       tdcCents: tdc.totalCents,
       grandTotalCents,
-      isReconciled: grandTotalCents !== null,
+      isReconciled: grandTotalCents !== null &&
+        (!participants.hasProvidedParticipants ||
+          (participants.note === null &&
+            participants.rows.every((row) => row.exposureCents !== null))),
+      pendingInputs,
       errors,
     },
   };

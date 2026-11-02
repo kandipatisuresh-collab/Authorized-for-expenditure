@@ -5,6 +5,7 @@ const approvals = document.querySelector("#approvals");
 const resultPanel = document.querySelector("#result");
 const preview = document.querySelector("#preview");
 const summary = document.querySelector("#summary");
+const pendingInputsPanel = document.querySelector("#pending-inputs");
 let costDefinitions = [];
 let approvalRoles = [];
 let generatedMarkdown = "";
@@ -168,6 +169,42 @@ function renderSummary(data) {
   }
 }
 
+function renderPendingInputs(inputs) {
+  form.querySelectorAll('[aria-invalid="true"]').forEach((input) => {
+    input.removeAttribute("aria-invalid");
+  });
+  pendingInputsPanel.replaceChildren();
+  pendingInputsPanel.hidden = inputs.length === 0;
+  if (inputs.length === 0) return;
+
+  const heading = document.createElement("h3");
+  heading.textContent = "Inputs to review";
+  const description = document.createElement("p");
+  description.textContent = "The AFE was generated. Select an item to return to its input; totals will reconcile after required values are complete.";
+  const list = document.createElement("ul");
+
+  for (const item of inputs) {
+    const entry = document.createElement("li");
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "pending-input-link";
+    button.textContent = `${item.label}: ${item.message}`;
+    button.addEventListener("click", () => {
+      const controls = item.inputNames.flatMap((name) =>
+        [...form.querySelectorAll(`[name="${name}"]`)]);
+      const control = controls.find((candidate) => !candidate.value.trim()) || controls[0];
+      if (!control) return;
+      control.setAttribute("aria-invalid", "true");
+      control.focus();
+      control.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+    entry.append(button);
+    list.append(entry);
+  }
+
+  pendingInputsPanel.append(heading, description, list);
+}
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const button = document.querySelector("#generate");
@@ -184,11 +221,15 @@ form.addEventListener("submit", async (event) => {
     generatedMarkdown = data.markdown;
     preview.textContent = generatedMarkdown;
     renderSummary(data);
+    const pendingInputs = data.summary.pendingInputs || [];
+    renderPendingInputs(pendingInputs);
     resultPanel.hidden = false;
     showStatus(
       data.summary.isReconciled
         ? "AFE generated. Review the document and all supplied assumptions before use."
-        : "AFE generated with unresolved inputs. Totals and exposures remain unreconciled.",
+        : pendingInputs.length
+          ? `AFE generated, but ${pendingInputs.length} input${pendingInputs.length === 1 ? "" : "s"} still need attention. Select an item below to review it; the document remains available.`
+          : "AFE generated, but the totals or exposures could not be reconciled. Review the document below.",
       data.summary.isReconciled ? "success" : "warning",
     );
     resultPanel.scrollIntoView({ behavior: "smooth", block: "start" });

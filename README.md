@@ -59,9 +59,12 @@ The AFE is calculated per request and is not persisted.
 5. Copy or download the document as `afe-output.md`.
 
 Missing inputs remain pending. Category totals and participant exposures are only
-calculated when the relevant inputs are complete and valid. This tool does not invent
-operational estimates, vendor quotes, project identities, or approvals. Review all
-assumptions and totals before using an AFE operationally.
+calculated when the relevant inputs are complete and valid. The AFE document is still
+generated when inputs are missing; the results panel lists unresolved fields, and each
+item links back to its input. Complete all required cost lines and both contingency
+percentages to reconcile the totals. This tool does not invent operational estimates,
+vendor quotes, project identities, or approvals. Review all assumptions and totals
+before using an AFE operationally.
 
 ## Tests
 

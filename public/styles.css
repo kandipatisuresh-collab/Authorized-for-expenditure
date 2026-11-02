@@ -250,6 +250,14 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
 .summary-card { display: flex; flex-direction: column; gap: 6px; padding: 14px; border: 1px solid var(--line); border-radius: 7px; background: #fafcfb; }
 .summary-card span { color: var(--muted); font-size: 11px; }
 .summary-card strong { font-size: 15px; }
+.pending-inputs { margin: 0 0 16px; padding: 16px; border: 1px solid #ead8af; border-radius: 7px; background: #fffaf0; }
+.pending-inputs h3 { margin: 0 0 6px; font-size: 14px; }
+.pending-inputs p { margin: 0 0 10px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.pending-inputs ul { display: grid; gap: 5px; margin: 0; padding-left: 18px; }
+.pending-inputs li { color: #805a17; font-size: 12px; }
+.pending-input-link { padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; font: inherit; text-align: left; text-decoration: underline; text-underline-offset: 2px; }
+.pending-input-link:hover { color: #543a0d; }
+input[aria-invalid="true"], select[aria-invalid="true"] { border-color: #b94a36; box-shadow: 0 0 0 3px rgb(185 74 54 / 10%); }
 .preview {
   max-height: 760px;
   overflow: auto;

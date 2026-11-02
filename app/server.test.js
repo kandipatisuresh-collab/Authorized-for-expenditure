@@ -80,6 +80,9 @@ test("keeps missing costs and contingencies pending without a numeric grand tota
   assert.match(result.markdown, /\| 102 \| Daywork Rig Rental \| Pending input \| Pending input \| Pending input \| Pending input; quantity and unit cost are required \|/);
   assert.match(result.markdown, /\| 201 \| Surface Casing \| Pending input \| Pending input \| Pending input \| Pending input; quantity and unit cost are required \|/);
   assert.match(result.markdown, /Net Cost Exposure \(USD\)[\s\S]*?\| Owner \| 100% \| Pending input/);
+  assert.ok(result.summary.pendingInputs.some((input) => input.label === "102 — Daywork Rig Rental"));
+  assert.ok(result.summary.pendingInputs.some((input) => input.label === "IDC contingency"));
+  assert.ok(result.summary.pendingInputs.some((input) => input.label === "TDC contingency"));
   assert.equal(result.summary.isReconciled, false);
 });
 
@@ -101,6 +104,21 @@ test("identifies negative costs and incomplete working interests", () => {
   assert.match(result.markdown, /total 90%, not 100%/);
   assert.match(result.markdown, /Net Cost Exposure \(USD\)[\s\S]*?\| Partner A \| 60% \| Pending input/);
   assert.match(result.markdown, /\| 206 \| Surface Production Facilities & Storage Tanks \| Lump Sum \| - \| Pending input \| Pending input; no lump-sum amount supplied \|/);
+});
+
+test("reports invalid participation as unresolved after costs are reconciled", () => {
+  const result = generateAfe({
+    ...completeRequest,
+    participants: [
+      { owner: "Partner A", interest: 60 },
+      { owner: "Partner B", interest: 30 },
+    ],
+  });
+
+  assert.equal(result.summary.grandTotalCents, 284240000);
+  assert.equal(result.summary.isReconciled, false);
+  assert.ok(result.summary.pendingInputs.some((input) =>
+    input.label === "Working interests" && input.message.includes("total 90%")));
 });
 
 test("keeps unsupported project and estimate details as explicit placeholders", () => {
@@ -214,6 +232,7 @@ test("serves the frontend and generates an AFE through the HTTP API", async (t) 
   assert.match(page, /Enter supplied values; missing cost inputs stay pending/);
   assert.match(page, /Calculations are performed by the app server/);
   assert.doesNotMatch(page, /run locally on this computer/i);
+  assert.match(page, /id="pending-inputs"/);
 
   const configResponse = await fetch(`${baseUrl}/api/config`);
   assert.equal(configResponse.status, 200);
